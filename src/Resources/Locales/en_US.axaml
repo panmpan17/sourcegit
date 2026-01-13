@@ -774,6 +774,7 @@
   <x:String x:Key="Text.ResetWithoutCheckout.MoveTo" xml:space="preserve">Move To:</x:String>
   <x:String x:Key="Text.ResetWithoutCheckout.Target" xml:space="preserve">Branch:</x:String>
   <x:String x:Key="Text.RevealFile" xml:space="preserve">Reveal in File Explorer</x:String>
+  <x:String x:Key="Text.RevealFile.Mac" xml:space="preserve">Reveal in Finder</x:String>
   <x:String x:Key="Text.Revert" xml:space="preserve">Revert Commit</x:String>
   <x:String x:Key="Text.Revert.Commit" xml:space="preserve">Commit:</x:String>
   <x:String x:Key="Text.Revert.CommitChanges" xml:space="preserve">Commit revert changes</x:String>

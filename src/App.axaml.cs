@@ -316,8 +316,24 @@ namespace SourceGit
             return null;
         }
 
-        public static string Text(string key, params object[] args)
+        public static string Text(in string key, params object[] args)
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                var macFmtObject = Current?.FindResource($"Text.{key}.Mac");
+                if (macFmtObject != AvaloniaProperty.UnsetValue)
+                {
+                    var macFmt = macFmtObject as string;
+                    if (string.IsNullOrWhiteSpace(macFmt))
+                        return $"Text.{key}";
+
+                    if (args == null || args.Length == 0)
+                        return macFmt;
+                    
+                    return string.Format(macFmt, args);
+                }
+            }
+
             var fmt = Current?.FindResource($"Text.{key}") as string;
             if (string.IsNullOrWhiteSpace(fmt))
                 return $"Text.{key}";
