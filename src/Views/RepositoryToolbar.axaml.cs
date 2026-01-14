@@ -152,6 +152,15 @@ namespace SourceGit.Views
             }
         }
 
+        private async void FetchDirectly(object sender, TappedEventArgs e)
+        {
+            if (DataContext is ViewModels.Repository repo)
+            {
+                await repo.FetchAsync(true);
+                e.Handled = true;
+            }
+        }
+
         private async void Fetch(object sender, TappedEventArgs e)
         {
             if (DataContext is ViewModels.Repository repo)

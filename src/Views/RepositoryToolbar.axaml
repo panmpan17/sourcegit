@@ -27,7 +27,7 @@
     </StackPanel>
 
     <StackPanel Grid.Column="1" Orientation="Horizontal">
-      <Button Classes="icon_button" Width="46" Tapped="Fetch">
+      <Button Classes="icon_button" Width="46" Tapped="FetchDirectly">
         <ToolTip.Tip>
           <StackPanel Orientation="Vertical">
             <TextBlock Text="{DynamicResource Text.Fetch}"/>
@@ -42,7 +42,7 @@
                      FontSize="7" HorizontalAlignment="Center"/>
         </StackPanel>
       </Button>
-      <Button Width="0" Height="0" Click="FetchDirectlyByHotKey" IsVisible="False" HotKey="{OnPlatform Ctrl+Down, macOS=⌘+Down}"/>
+      <!-- <Button Width="0" Height="0" Click="FetchDirectlyByHotKey" IsVisible="False" HotKey="{OnPlatform Ctrl+Down, macOS=⌘+Down}"/> -->
 
       <Button Classes="icon_button" Width="46" Margin="16,0,0,0" Tapped="Pull" IsVisible="{Binding !IsBare}" IsEnabled="{Binding !IsBare}">
         <ToolTip.Tip>
