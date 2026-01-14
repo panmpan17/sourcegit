@@ -629,6 +629,14 @@ namespace SourceGit.Views
             if (selection.IsEmpty)
                 return;
 
+            var stageSelectedLines = new MenuItem();
+            stageSelectedLines.Header = "Stage selected lines";
+            stageSelectedLines.Icon = App.CreateMenuIcon("Icons.File.Add");
+            stageSelectedLines.Click += async (_, ev) =>
+            {
+                // Michael TODO: add lines staging support
+            };
+
             var copy = new MenuItem();
             copy.Header = App.Text("Copy");
             copy.Icon = App.CreateMenuIcon("Icons.Copy");
@@ -639,6 +647,7 @@ namespace SourceGit.Views
             };
 
             var menu = new ContextMenu();
+            menu.Items.Add(stageSelectedLines);
             menu.Items.Add(copy);
             menu.Open(TextArea.TextView);
 
