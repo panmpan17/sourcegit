@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -623,19 +624,102 @@ namespace SourceGit.Views
             BlockNavigation.UpdateByCaretPosition(TextArea?.Caret?.Line ?? 0);
         }
 
+        private bool CheckSelectedLineCanBeStaged()
+        {
+            var selection = TextArea.Selection;
+            if (selection.IsEmpty)
+                return false;
+
+            int startLine = selection.StartPosition.Line - 1;
+            int endLine = selection.EndPosition.Line - 1;
+            if (startLine > endLine)
+                (startLine, endLine) = (endLine, startLine);
+            
+            List<Models.TextDiffLine> lines = GetLines();
+            endLine = Math.Min(endLine, lines.Count - 1);
+
+            for (int i = startLine; i <= endLine; i++)
+            {
+                Models.TextDiffLine line = lines[i];
+
+                if (line.Type == Models.TextDiffLineType.Added ||
+                    line.Type == Models.TextDiffLineType.Deleted)
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        private async Task StageSelectedLinesAsync()
+        {
+            var selection = TextArea.Selection;
+            if (selection.IsEmpty)
+            {
+                App.SendNotification("Info", "Selection is empty.");
+                return;
+            }
+
+            int startLine = selection.StartPosition.Line - 1;
+            int endLine = selection.EndPosition.Line - 1;
+            if (startLine > endLine)
+                (startLine, endLine) = (endLine, startLine);
+
+
+            List<Models.TextDiffLine> lines = GetLines();
+
+            Models.TextDiff diff = new Models.TextDiff();
+
+            bool bHasChanges = false;
+            for (int i = startLine; i <= endLine; i++)
+            {
+                Models.TextDiffLine line = lines[i];
+
+                if (line.Type == Models.TextDiffLineType.Added ||
+                    line.Type == Models.TextDiffLineType.Deleted)
+                {
+                    diff.Lines.Add(line);
+                    bHasChanges = true;
+                }
+            }
+
+            if (!bHasChanges)
+                return;
+            
+            Repository repoView = this.FindAncestorOfType<Repository>();
+            if (repoView?.DataContext is not ViewModels.Repository repo)
+                return;
+            
+            // using var lockWatcher = repo.LockWatcher();
+
+            // var tmpFile = Path.GetTempFileName();
+            // if (change.WorkTree == Models.ChangeState.Untracked)
+            // {
+            //     diff.GenerateNewPatchFromSelection(change, null, selection, false, tmpFile);
+            // }
+            // else if (chunk.Combined)
+            // {
+            //     var treeGuid = await new Commands.QueryStagedFileBlobGuid(repo.FullPath, change.Path).GetResultAsync();
+            //     diff.GeneratePatchFromSelection(change, treeGuid, selection, false, tmpFile);
+            // }
+            // else
+            // {
+            //     var treeGuid = await new Commands.QueryStagedFileBlobGuid(repo.FullPath, change.Path).GetResultAsync();
+            //     diff.GeneratePatchFromSelectionSingleSide(change, treeGuid, selection, false, chunk.IsOldSide, tmpFile);
+            // }
+
+            // await new Commands.Apply(repo.FullPath, tmpFile, true, "nowarn", "--cache --index").ExecAsync();
+            // File.Delete(tmpFile);
+
+            // repo.MarkWorkingCopyDirtyManually();
+        }
+
         private void OnTextViewContextRequested(object sender, ContextRequestedEventArgs e)
         {
             var selection = TextArea.Selection;
             if (selection.IsEmpty)
                 return;
-
-            var stageSelectedLines = new MenuItem();
-            stageSelectedLines.Header = "Stage selected lines";
-            stageSelectedLines.Icon = App.CreateMenuIcon("Icons.File.Add");
-            stageSelectedLines.Click += async (_, ev) =>
-            {
-                // Michael TODO: add lines staging support
-            };
 
             var copy = new MenuItem();
             copy.Header = App.Text("Copy");
@@ -647,7 +731,20 @@ namespace SourceGit.Views
             };
 
             var menu = new ContextMenu();
-            menu.Items.Add(stageSelectedLines);
+
+            if (CheckSelectedLineCanBeStaged())
+            {
+                var stageSelectedLines = new MenuItem();
+                stageSelectedLines.Header = "Stage selected lines";
+                stageSelectedLines.Icon = App.CreateMenuIcon("Icons.File.Add");
+                stageSelectedLines.Click += async (_, ev) =>
+                {
+                    await StageSelectedLinesAsync();
+                    ev.Handled = true;
+                };
+                menu.Items.Add(stageSelectedLines);
+            }
+
             menu.Items.Add(copy);
             menu.Open(TextArea.TextView);
 
